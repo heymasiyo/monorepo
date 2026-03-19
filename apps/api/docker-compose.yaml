@@ -1,5 +1,5 @@
 # This is meant for local development only. Do not use this in production.
-name: "books"
+name: "monorepo"
 
 services:
   postgres:
