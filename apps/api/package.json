@@ -4,7 +4,15 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "docker:up": "docker compose -f docker-compose.yaml up -d",
+    "docker:stop": "docker compose -f docker-compose.yaml stop",
+    "docker:down": "docker compose -f docker-compose.yaml down",
+    "docker:clean": "docker compose -f docker-compose.yaml down -v",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
