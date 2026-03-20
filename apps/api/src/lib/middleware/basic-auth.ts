@@ -4,7 +4,7 @@ import { Context } from "hono";
 import { basicAuth } from "hono/basic-auth";
 
 export function withBasicAuth() {
-  basicAuth({
+  return basicAuth({
     verifyUser: (username, password, c: Context<{ Bindings: Bindings }>) => {
       return (
         username === c.env.BASIC_AUTH_USERNAME &&
