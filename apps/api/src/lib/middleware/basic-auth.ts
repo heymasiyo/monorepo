@@ -1,5 +1,5 @@
 import type { Bindings } from "@/lib/types/bindings";
-import { Context } from "hono";
+import type { Context } from "hono";
 
 import { basicAuth } from "hono/basic-auth";
 

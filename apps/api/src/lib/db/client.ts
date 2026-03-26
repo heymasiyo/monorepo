@@ -4,7 +4,7 @@ import type { Context } from "hono";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-export function clientDB(c: Context<{ Bindings: Bindings }>) {
+export function connectDB(c: Context<{ Bindings: Bindings }>) {
   const sql = postgres(c.env.HYPERDRIVE.connectionString, {
     max: 5,
     fetch_types: false,
@@ -13,3 +13,5 @@ export function clientDB(c: Context<{ Bindings: Bindings }>) {
 
   return db;
 }
+
+export type Database = ReturnType<typeof connectDB>;
