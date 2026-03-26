@@ -1,24 +1,35 @@
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 
 import { user } from "@/lib/db/schema/auth";
 
-export const workspace = pgTable("workspace", {
-  id: text("id").primaryKey().notNull(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull(),
-  logo: text("logo"),
-  metadata: text("metadata"),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", {
-    withTimezone: true,
-    mode: "string",
-  })
-    .defaultNow()
-    .$onUpdate(() => new Date().toISOString())
-    .notNull(),
-});
+export const workspace = pgTable(
+  "workspace",
+  {
+    id: text("id").primaryKey().notNull(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    logo: text("logo"),
+    metadata: text("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "string",
+    })
+      .defaultNow()
+      .$onUpdate(() => new Date().toISOString())
+      .notNull(),
+  },
+  (table) => [uniqueIndex("workspace_slug_idx").on(table.slug)]
+);
 
 export const workspaceRole = pgTable(
   "workspace_role",
