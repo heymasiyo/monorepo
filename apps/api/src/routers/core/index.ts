@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 
-import authRouter from "@/routes/core/auth";
+import authRouter from "@/routers/core/auth";
 
 const coreRouter = new Hono();
 
