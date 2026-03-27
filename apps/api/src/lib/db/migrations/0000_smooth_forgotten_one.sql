@@ -74,7 +74,8 @@ CREATE TABLE "workspace" (
 	"logo" text,
 	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "workspace_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "workspace_role" (
@@ -106,4 +107,5 @@ CREATE INDEX "invitation_workspace_role_id_idx" ON "invitation" USING btree ("wo
 CREATE INDEX "member_user_id_idx" ON "member" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "member_workspace_id_idx" ON "member" USING btree ("workspace_id");--> statement-breakpoint
 CREATE INDEX "member_workspace_role_id_idx" ON "member" USING btree ("workspace_role_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "workspace_slug_idx" ON "workspace" USING btree ("slug");--> statement-breakpoint
 CREATE INDEX "workspace_role_workspace_id_idx" ON "workspace_role" USING btree ("workspace_id");
