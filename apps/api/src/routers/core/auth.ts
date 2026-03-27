@@ -62,7 +62,7 @@ authRouter.post(
 
     const workspaceRoleData = await createWorkspaceRole(db, {
       workspaceId: workspaceData.id,
-      role: "administrator",
+      role: "Administrator",
       superuser: true,
       permission: JSON.stringify([]),
     });
