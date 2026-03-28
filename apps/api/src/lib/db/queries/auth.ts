@@ -1,9 +1,9 @@
 import type { Database } from "@/lib/db/client";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
-import { account, user } from "@/lib/db/schema/auth";
+import { account, session, user } from "@/lib/db/schema/auth";
 
 export async function checkEmailExists(db: Database, email: string) {
   const isExists = await db.$count(user, eq(user.email, email));
@@ -47,6 +47,62 @@ export async function createEmailAccount(
       accountId: params.userId,
       providerId: "email",
       password: params.password,
+    })
+    .returning();
+
+  return result;
+}
+
+export async function getUserByEmail(db: Database, email: string) {
+  const [result] = await db
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified,
+      image: user.image,
+    })
+    .from(user)
+    .where(eq(user.email, email));
+
+  return result;
+}
+
+export async function getEmailAccount(db: Database, userId: string) {
+  const [result] = await db
+    .select({
+      id: account.id,
+      userId: account.userId,
+      accountId: account.accountId,
+      providerId: account.providerId,
+      password: account.password,
+    })
+    .from(account)
+    .where(and(eq(account.userId, userId), eq(account.providerId, "email")));
+
+  return result;
+}
+
+export type createSessionParams = {
+  userId: string;
+  token: string;
+  expiresAt: string;
+  ipAddress: string;
+  userAgent: string;
+  activeWorkspaceId: string;
+};
+
+export async function createSession(db: Database, params: createSessionParams) {
+  const [result] = await db
+    .insert(session)
+    .values({
+      id: uuidv4(),
+      userId: params.userId,
+      token: params.token,
+      expiresAt: params.expiresAt,
+      ipAddress: params.ipAddress,
+      userAgent: params.userAgent,
+      activeWorkspaceId: params.activeWorkspaceId,
     })
     .returning();
 

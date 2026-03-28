@@ -76,3 +76,15 @@ export async function createMember(db: Database, params: CreateMemberParams) {
 
   return result;
 }
+
+export async function getWorkspaceIdByUserId(db: Database, userId: string) {
+  const [result] = await db
+    .select({
+      id: workspace.id,
+    })
+    .from(workspace)
+    .innerJoin(member, eq(workspace.id, member.workspaceId))
+    .where(eq(member.userId, userId));
+
+  return result.id;
+}
