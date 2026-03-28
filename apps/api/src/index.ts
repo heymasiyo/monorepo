@@ -36,7 +36,7 @@ app.get("/health", (c) => {
   );
 });
 
-app.route("/api", routers);
+app.route("/", routers);
 
 app.notFound((c) => {
   return c.json(
