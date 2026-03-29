@@ -11,6 +11,7 @@ import {
   createEmailAccount,
   createSession,
   createUser,
+  deleteSessionByToken,
   getEmailAccount,
   getUserByEmail,
 } from "@/lib/db/queries/auth";
@@ -22,8 +23,10 @@ import {
   getWorkspaceIdByUserId,
 } from "@/lib/db/queries/workspace";
 import { withBasicAuth } from "@/lib/middleware/basic-auth";
-import zValidator from "@/lib/middleware/zod-validator";
+import { withBearerAuth } from "@/lib/middleware/bearer-auth";
+import { zValidator } from "@/lib/middleware/zod-validator";
 import { signInEmailSchema, signUpEmailSchema } from "@/lib/schemas/auth";
+import { JwtPayload } from "@/lib/types/common";
 import {
   getRequestInfo,
   hashPassword,
@@ -119,16 +122,17 @@ authRouter.post(
     const expiresAt = timestampToken + 7 * 24 * 60 * 60;
     const expiresAtStr = new Date(expiresAt * 1000).toISOString();
 
+    const workspaceId = await getWorkspaceIdByUserId(db, userData.id);
+    const { ip, userAgent } = getRequestInfo(c);
+
     const payloadToken = {
       exp: expiresAt,
       nbf: timestampToken,
       iat: timestampToken,
-      iss: userData.id,
+      iss: workspaceId,
+      sub: userData.id,
     };
     const token = await sign(payloadToken, c.env.JWT_SECRET);
-
-    const workspaceId = await getWorkspaceIdByUserId(db, userData.id);
-    const { ip, userAgent } = getRequestInfo(c);
 
     await createSession(db, {
       userId: userData.id,
@@ -150,5 +154,19 @@ authRouter.post(
     );
   }
 );
+
+authRouter.post("/sign-out", withBearerAuth(), async (c) => {
+  const db = connectDB(c);
+  const session = c.get("jwtPayload") as JwtPayload;
+
+  await deleteSessionByToken(db, session.token);
+
+  return c.json(
+    {
+      message: "Sign out successful",
+    },
+    200
+  );
+});
 
 export default authRouter;
