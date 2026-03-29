@@ -53,7 +53,7 @@ app.onError((err, c) => {
 
     return c.json(
       {
-        message: err.message,
+        message: err.status === 401 ? "Unauthorized" : err.message,
       },
       err.status
     );
