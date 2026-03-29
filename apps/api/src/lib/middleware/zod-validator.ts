@@ -1,16 +1,19 @@
 import type { ValidationTargets } from "hono";
 
-import { zValidator } from "@hono/zod-validator";
+import { zValidator as zv } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 
 import { formatValidationError } from "@/lib/utils";
 
-export default <T extends z.ZodType, Target extends keyof ValidationTargets>(
+export const zValidator = <
+  T extends z.ZodType,
+  Target extends keyof ValidationTargets,
+>(
   target: Target,
   schema: T
 ) =>
-  zValidator(target, schema, (result, _) => {
+  zv(target, schema, (result, _) => {
     if (!result.success) {
       const errorParse = JSON.parse(result.error.message);
 
