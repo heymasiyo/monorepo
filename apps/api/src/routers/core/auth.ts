@@ -12,8 +12,10 @@ import {
   createSession,
   createUser,
   deleteSessionByToken,
+  deleteSessionByUserId,
   getEmailAccount,
   getUserByEmail,
+  updatePasswordAccount,
 } from "@/lib/db/queries/auth";
 import {
   checkSlugExists,
@@ -25,7 +27,11 @@ import {
 import { withBasicAuth } from "@/lib/middleware/basic-auth";
 import { withBearerAuth } from "@/lib/middleware/bearer-auth";
 import { zValidator } from "@/lib/middleware/zod-validator";
-import { signInEmailSchema, signUpEmailSchema } from "@/lib/schemas/auth";
+import {
+  changePasswordSchema,
+  signInEmailSchema,
+  signUpEmailSchema,
+} from "@/lib/schemas/auth";
 import { JwtPayload } from "@/lib/types/common";
 import {
   getRequestInfo,
@@ -168,5 +174,41 @@ authRouter.post("/sign-out", withBearerAuth(), async (c) => {
     200
   );
 });
+
+authRouter.post(
+  "/change-password",
+  withBearerAuth(),
+  zValidator("json", changePasswordSchema),
+  async (c) => {
+    const db = connectDB(c);
+    const session = c.get("jwtPayload") as JwtPayload;
+    const body = c.req.valid("json");
+
+    const emailAccountData = await getEmailAccount(db, session.sub);
+    if (
+      !verifyPassword(body.currentPassword, emailAccountData.password as string)
+    ) {
+      throw new HTTPException(400, {
+        message: "Invalid current password",
+      });
+    }
+
+    await updatePasswordAccount(db, {
+      userId: session.sub,
+      password: hashPassword(body.newPassword),
+    });
+
+    if (body.revokeOtherSessions) {
+      await deleteSessionByUserId(db, session.sub);
+    }
+
+    return c.json(
+      {
+        message: "Change password successful",
+      },
+      200
+    );
+  }
+);
 
 export default authRouter;
