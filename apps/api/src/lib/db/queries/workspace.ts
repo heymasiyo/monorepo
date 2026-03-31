@@ -1,6 +1,6 @@
 import type { Database } from "@/lib/db/client";
 
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
 import { member, workspace, workspaceRole } from "@/lib/db/schema/workspace";
@@ -14,6 +14,8 @@ export async function checkSlugExists(db: Database, slug: string) {
 export type CreateWorkspaceParams = {
   name: string;
   slug: string;
+  logo?: string;
+  metadata?: string;
 };
 
 export async function createWorkspace(
@@ -26,6 +28,8 @@ export async function createWorkspace(
       id: uuidv4(),
       name: params.name,
       slug: params.slug,
+      logo: params.logo,
+      metadata: params.metadata,
     })
     .returning();
 
@@ -87,4 +91,68 @@ export async function getWorkspaceIdByUserId(db: Database, userId: string) {
     .where(eq(member.userId, userId));
 
   return result.id;
+}
+
+export async function getWorkspacesByUserId(db: Database, userId: string) {
+  const result = await db
+    .select({
+      id: workspace.id,
+      name: workspace.name,
+      slug: workspace.slug,
+      logo: workspace.logo,
+      metadata: workspace.metadata,
+    })
+    .from(workspace)
+    .innerJoin(member, eq(workspace.id, member.workspaceId))
+    .where(eq(member.userId, userId));
+
+  return result;
+}
+
+export type CheckSlugExistsExceptIdParams = {
+  slug: string;
+  id: string;
+};
+
+export async function checkSlugExistsExceptId(
+  db: Database,
+  params: CheckSlugExistsExceptIdParams
+) {
+  const isExists = await db.$count(
+    workspace,
+    and(eq(workspace.slug, params.slug), ne(workspace.id, params.id))
+  );
+
+  return isExists;
+}
+
+export type UpdateWorkspaceParams = CreateWorkspaceParams & {
+  id: string;
+};
+
+export async function updateWorkspace(
+  db: Database,
+  params: UpdateWorkspaceParams
+) {
+  const [result] = await db
+    .update(workspace)
+    .set({
+      name: params.name,
+      slug: params.slug,
+      logo: params.logo,
+      metadata: params.metadata,
+    })
+    .where(eq(workspace.id, params.id))
+    .returning();
+
+  return result;
+}
+
+export async function deleteWorkspaceById(db: Database, id: string) {
+  const [result] = await db
+    .delete(workspace)
+    .where(eq(workspace.id, id))
+    .returning();
+
+  return result;
 }

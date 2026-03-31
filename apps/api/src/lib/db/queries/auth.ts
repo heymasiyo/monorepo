@@ -165,3 +165,15 @@ export async function deleteSessionByUserId(db: Database, userId: string) {
 
   return result;
 }
+
+export async function deleteSessionByWorkspaceId(
+  db: Database,
+  workspaceId: string
+) {
+  const [result] = await db
+    .delete(session)
+    .where(eq(session.activeWorkspaceId, workspaceId))
+    .returning();
+
+  return result;
+}
